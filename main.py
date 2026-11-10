@@ -12,7 +12,8 @@ def index():
     conn = get_db()
     comments = conn.execute("SELECT content FROM comments").fetchall()
     conn.close()
-    return render_template('index.html', comments=comments)
+    return render_template('page.html', view='index', title='Guestbook',
+                           comments=comments)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -30,7 +31,7 @@ def login():
             session['user'] = user[1]
             return redirect(url_for('index'))
         return "Invalid credentials", 401
-    return render_template('login.html')
+    return render_template('page.html', view='login', title='Login')
 
 @app.route('/profile/<int:user_id>')
 def profile(user_id):
@@ -45,13 +46,14 @@ def profile(user_id):
     conn.close()
     if user is None:
         return "User not found", 404
-    return render_template('profile.html', user=user)
+    return render_template('page.html', view='profile', title='Profile',
+                           user=user)
 
 @app.route('/comment', methods=['POST'])
 def add_comment():
     content = request.form['content']
     conn = get_db()
-    # УЯЗВИМОСТЬ A03:2021 (Stored XSS). 
+    # УЯЗВИМОСТЬ A03:2021 (Stored XSS).
     conn.execute("INSERT INTO comments (content) VALUES (?)", (content,))
     conn.commit()
     conn.close()
